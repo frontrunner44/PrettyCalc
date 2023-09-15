@@ -1,6 +1,7 @@
 /*
 The calculation method first converts the prefix expression into a postfixed expression and then runs a stack-based algorithm to calculate the expression result.
-Shunting-Yard algorithms typically take two pass-throughs, one to convert to postfix and another to run a stack algorithm for calculation. My approach performs both in a single pass-through.
+This is known as a Shunting-Yard algorithm, which typically takes a two pass-through approach, one to convert to postfix and another to run a stack algorithm for calculation. 
+My approach performs both in a single pass-through.
 */
 
 const operators = ["+", "-", "*", "/", "^"];
