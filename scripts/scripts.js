@@ -1,5 +1,6 @@
 /*
 The calculation method is to first convert the prefix equation into a postfixed equation and then run a stack based algorithm to calculate the equation result.
+Shunting-Yard algorithms typically take two pass-throughs, one to convert to postfix and the second to run a stack algorithm for calculation. My approach performs both in a single passthrough.
 In order to do this properly, we need the array to be formatted in the correct way. We need each number (even if it has decimal places) to take up their own index, as well as each operator and parenthesis. 
 However, to make checking for proper equation design easier, we have to have a slight difference in the array format, which is allowing decimals to take their own index rather than being grouped with their respective integers.
 Because of this, we have to manipulate the equation array at various locations in various different ways depending on the requirements at the time. For example, when checking if it's okay to add a decimal,
@@ -8,7 +9,7 @@ We know if a decimal is found later than any other operator or parenthesis, we c
 */
 
 const operators = ["+", "-", "*", "/", "^"];
-let equation = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and rewriting it into the HTML.
+let equation = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and rewriting it with innerHTML.
 
 function handleNumber(num) {
     const lastIndex = equation.length-1;
@@ -135,7 +136,7 @@ function calculateInput(postFixThis) {
       if(operators.includes(value)) { // If the current index is an operator
          while(opEval(value) <= opEval(opStack[opStack.length-1])) { // If the operator at the top of the opStack is equal or higher importance. No need to check if it's empty, because that will return -1.
               postFixEquation.push(opStack[opStack.length-1]);
-              stack.push(opStack.pop()); // Push the top of the operator stack to the expression as long as it's not an exponent
+              stack.push(opStack.pop()); // Push the top of the operator stack to the expression
               if(stack.length >= 3) {
                   runCalc();
               }
