@@ -5,7 +5,7 @@ My approach performs both in a single pass-through.
 */
 
 const operators = ["+", "-", "x", "/", "^"];
-const pattern = /(\d+\.\d+|\d+|\+|\-|x|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
+const pattern = /(\d+\.\d+|\d+|(?<=\D|^)-\d+|\+|\-|x|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
 let expression = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and updating the preview window with innerHTML.
 
 function handleNumber(num) {
@@ -131,14 +131,6 @@ function equalButton() {
     return;
   } else {
     expression = expression.join("").match(pattern); // Converts the expression into the proper format for running the calculation function(s).
-    for(let i=0; i<expression.length; i++) { // A for loop to search for "-" and combine them with their respective integer when they represent a negative number and not an operator. I'm bad at RegEx so I couldn't find a regex that would identity both when it was an operator and when it belonged to an integer.
-      if(expression[i] === "-") {
-        if(isNaN(expression[i-1]) && expression[i-1] !== ")") { // If the index before the "-" is not a number and also not a closing parenthesis
-          expression[i] = expression[i] + expression[i+1]; // then we combine this index with the index in front of it, which must be a number
-          expression.splice(i+1,1); // and then we remove the index in front of the "-"
-        }
-      }
-    }
     const result = calculateInput(expression);
     const element = document.getElementById("result");
     element.innerHTML = result;
