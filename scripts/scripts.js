@@ -4,15 +4,17 @@ This is known as a Shunting-Yard algorithm, which typically takes a two pass-thr
 My approach performs both in a single pass-through.
 */
 
-const operators = ["+", "-", "*", "/", "^"];
-const pattern = /(\d+\.\d+|\d+|\+|\-|\*|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
-let expression = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and rewriting it with innerHTML.
+const operators = ["+", "-", "x", "/", "^"];
+const pattern = /(\d+\.\d+|\d+|\+|\-|x|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
+let expression = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and updating the preview window with innerHTML.
 
 function handleNumber(num) {
   const lastIndex = expression.length - 1;
   if(expression[lastIndex] === ")") {
-    expression.push("*");
+    expression.push("x");
     expression.push(num);
+  } else if(!isNaN(expression[lastIndex])) {
+    expression[lastIndex] += num.toString();
   } else { // Change back to || last index is ".", because we won't need the next else if statement once we revert back to every character having it's own index
     expression.push(num);
   }
@@ -21,10 +23,9 @@ function handleNumber(num) {
 
 function handleParenthesis() {
   const lastIndex = expression.length - 1;
-  let openPara = 0;
-  let closePara = 0;
-  // for loop here that loops through the expression array and counts the instances of "(" and ")"
-  for(let i = 0; i < expression.length; i++) {
+  let openPara = 0; // Will track how many open parenthesis found
+  let closePara = 0; // Will track how many closing parenthesis found.
+  for(let i = 0; i < expression.length; i++) { // Loop to count the parenthesis so we know which parenthesis our "( )" button will insert.
     if(expression[i] === "(") {
       openPara++;
     } else if(expression[i] === ")") {
@@ -32,23 +33,23 @@ function handleParenthesis() {
     }
   }
   if(!isNaN(expression[lastIndex]) || expression[lastIndex] === ")") { // If the last index is a number or closing parenthesis
-    if(openPara > closePara) {
+    if(openPara > closePara) { // and there are more opening parenthesis than closing, then we add a closing parenthesis to the expression
       expression.push(")");
-    } else {
-      expression.push("*");
+    } else { // otherwise we add a multiplication operator and an opening parenthesis
+      expression.push("x");
       expression.push("(");
     }
   } else if(expression[lastIndex] === "(" || operators.indexOf(expression[lastIndex]) !== -1 || expression.length === 0) { // If the last index is a "(", an operator or the expression array is empty.
-    expression.push("(");
+    expression.push("("); // then we just add an opening parenthesis
   }
   updatePreview();
 }
 
 function handleOperator(op) {
   const lastIndex = expression.length - 1;
-  if(expression[lastIndex] === "(" || expression[lastIndex] === "." || expression.length === 0) {
+  if(expression[lastIndex] === "(" || expression[lastIndex] === "." || expression.length === 0) { // Placing an operator after these symbols is incorrect expression format, so we return
     return;
-  } else if(operators.indexOf(expression[lastIndex]) !== -1) {
+  } else if(operators.indexOf(expression[lastIndex]) !== -1) { // If there is already an expression at the end of the expression, we replace it.
     expression.pop();
     expression.push(op);
   } else {
@@ -79,8 +80,28 @@ function handleDecimal() {
   updatePreview();
 }
 
-function clearRecent() {
-  expression.pop();
+// Convert the latest number to negative or positive
+function handlePositiveNegative() {
+  const lastIndex = expression.length-1;
+  if(isNaN(expression[lastIndex])) {
+    return;
+  } else {
+    const num = expression[lastIndex];
+    if(num > 0) {
+      expression[lastIndex] = num * -1;
+    } else if(num < 0) {
+      expression[lastIndex] = num / -1;
+    }
+  }
+  updatePreview();
+}
+
+function clearRecent(clear) {
+  if(clear === 1) {
+    expression.pop();
+  } else {
+    expression = [];
+  }
   updatePreview();
 }
 
@@ -97,7 +118,7 @@ function equalButton() {
   const lastIndex = expression.length - 1;
   let openPara = 0;
   let closePara = 0;
-  for (let i = 0; i < expression.length; i++) {
+  for(let i = 0; i < expression.length; i++) {
     if(expression[i] === "(") {
       openPara++;
     } else if(expression[i] === ")") {
@@ -105,11 +126,23 @@ function equalButton() {
     }
   }
   if(expression[lastIndex] === "(" || expression[lastIndex] === "." || operators.indexOf(expression[lastIndex]) !== -1 || openPara > closePara) {
+    expression.push(" Invalid Expression");
+    updatePreview();
+    expression.pop();
     return;
   } else {
     // Converts the expression into the proper format for running the calculation function(s).
-    expression = expression.join("");
-    expression = expression.match(pattern);
+    expression = expression.join("").match(pattern);
+    // A for loop to search for "-" and combine them with their respective integer when they represent a negative number and not an operator.
+    // I'm bad at RegEx so I couldn't find a regex that would identity both when it was an operator and when it belonged to an integer.
+    for(let i=0; i<expression.length; i++) {
+      if(expression[i] === "-") {
+        if(isNaN(expression[i-1]) && expression[i-1] !== ")") {
+          expression[i] = expression[i] + expression[i+1];
+          expression.splice(i+1,1);
+        }
+      }
+    }
     const result = calculateInput(expression);
     const element = document.getElementById("result");
     element.innerHTML = result;
@@ -122,7 +155,7 @@ function calculateInput(postFixThis) {
   let postFixexpression = [];
   postFixThis.forEach(value => {
     if(operators.includes(value)) { // If the current index is an operator
-      while (opEval(value) <= opEval(opStack[opStack.length - 1])) { // If the operator at the top of the opStack is equal or of higher importance. No need to check if it's empty because that will return -1.
+      while(opEval(value) <= opEval(opStack[opStack.length - 1])) { // If the operator at the top of the opStack is equal or of higher importance. No need to check if it's empty because that will return -1.
         postFixexpression.push(opStack[opStack.length - 1]);
         stack.push(opStack.pop()); // Push the top of the operator stack to the expression
         if(stack.length >= 3) {
@@ -138,7 +171,7 @@ function calculateInput(postFixThis) {
         postFixexpression.push(value);
       }
     } else if(value === ")") { // If the current value is a closing parenthesis, pop operators from the opStack onto the expression until an opening parenthesis is found
-      while (operators.includes(opStack[opStack.length - 1])) { // While the top of the opStack is an operator (because if it isn't, it's an opening parenthesis)
+      while(operators.includes(opStack[opStack.length - 1])) { // While the top of the opStack is an operator (because if it isn't, it's an opening parenthesis)
         postFixexpression.push(opStack[opStack.length - 1]);
         stack.push(opStack.pop());
         runCalc();
@@ -146,7 +179,7 @@ function calculateInput(postFixThis) {
       opStack.pop(); // Remove ( from the stack
     }
   });
-  while (opStack.length >= 1 || stack.length === 3) { // Finish popping any leftover operators from the operator opStack to the expression.
+  while(opStack.length >= 1 || stack.length === 3) { // Finish popping any leftover operators from the operator opStack to the expression.
     if(operators.includes(stack[stack.length - 1])) {
       runCalc();
     } else {
@@ -167,7 +200,7 @@ function calculateInput(postFixThis) {
       case "^":
         stack.push(num1 ** num2);
         break;
-      case "*":
+      case "x":
         stack.push(num1 * num2);
         break;
 
@@ -192,7 +225,7 @@ function calculateInput(postFixThis) {
   function opEval(op) {
     if(op === "+" || op === "-") {
       return 1;
-    } else if(op === "*" || op === "/") {
+    } else if(op === "x" || op === "/") {
       return 2;
     } else if(op === "^") {
       return 3;
