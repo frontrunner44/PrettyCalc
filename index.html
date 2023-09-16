@@ -21,20 +21,24 @@
             <input type="button" onClick="handleOperator(`/`)" value="÷">
             <input type="button" onClick="handlePositiveNegative()" value="+/-">
           </div>
-          <button class="digit" onClick="handleNumber(4)">4</button>
-          <button class="digit" onClick="handleNumber(5)">5</button>
-          <button class="digit" onClick="handleNumber(6)">6</button>
-          <button class="operator" onClick="handleOperator('-')">-</button>
-          <br />
-          <button class="digit" onClick="handleNumber(1)">1</button>
-          <button class="digit" onClick="handleNumber(2)">2</button>
-          <button class="digit" onClick="handleNumber(3)">3</button>
-          <button class="operator" onClick="handleOperator('+')">+</button>
-          <br />
-          <button class="operator" onClick="handleOperator('x')">x</button>
-          <button class="digit" onClick="handleNumber(0)">0</button>
-          <button class="digit" onClick="handleDecimal()">.</button>
-          <button id="=" onClick="equalButton()">=</button>
+          <div>
+            <input type="button" onClick="handleNumber(4)" value="4">
+            <input type="button" onClick="handleNumber(5)" value="5">
+            <input type="button" onClick="handleNumber(6)" value="6">
+            <input type="button" onClick="handleOperator(`-`)" value="-">
+          </div>
+          <div>
+            <input type="button" onClick="handleNumber(1)" value="1">
+            <input type="button" onClick="handleNumber(2)" value="2">
+            <input type="button" onClick="handleNumber(3)" value="3">
+            <input type="button" onClick="handleOperator(`+`)" value="+">
+          </div>
+          <div>
+            <input type="button" onClick="handleOperator(`x`)" value="x">
+            <input type="button" onClick="handleNumber(0)" value="0">
+            <button class="digit" onClick="handleDecimal()">.</button>
+            <input type="button" onClick="equalButton()" value="=">
+          </div>
         </div>
       </div>
     </div>

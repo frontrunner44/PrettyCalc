@@ -58,8 +58,8 @@ function handleOperator(op) {
   updatePreview();
 }
 
-// We need to check if it's valid to place another decimal. We can do this by making sure the most recent decimal came BEFORE the most recent operator or parenthesis.
-function handleDecimal() {
+
+function handleDecimal() { // We need to check if it's valid to place another decimal. We can do this by making sure the most recent decimal came BEFORE the most recent operator or parenthesis.
   const lastIndex = expression.length - 1;
   if(isNaN(expression[lastIndex])) {
     return;
@@ -80,8 +80,7 @@ function handleDecimal() {
   updatePreview();
 }
 
-// Convert the latest number to negative or positive
-function handlePositiveNegative() {
+function handlePositiveNegative() { // Convert the latest number to negative or positive
   const lastIndex = expression.length-1;
   if(isNaN(expression[lastIndex])) {
     return;
@@ -131,15 +130,12 @@ function equalButton() {
     expression.pop();
     return;
   } else {
-    // Converts the expression into the proper format for running the calculation function(s).
-    expression = expression.join("").match(pattern);
-    // A for loop to search for "-" and combine them with their respective integer when they represent a negative number and not an operator.
-    // I'm bad at RegEx so I couldn't find a regex that would identity both when it was an operator and when it belonged to an integer.
-    for(let i=0; i<expression.length; i++) {
+    expression = expression.join("").match(pattern); // Converts the expression into the proper format for running the calculation function(s).
+    for(let i=0; i<expression.length; i++) { // A for loop to search for "-" and combine them with their respective integer when they represent a negative number and not an operator. I'm bad at RegEx so I couldn't find a regex that would identity both when it was an operator and when it belonged to an integer.
       if(expression[i] === "-") {
-        if(isNaN(expression[i-1]) && expression[i-1] !== ")") {
-          expression[i] = expression[i] + expression[i+1];
-          expression.splice(i+1,1);
+        if(isNaN(expression[i-1]) && expression[i-1] !== ")") { // If the index before the "-" is not a number and also not a closing parenthesis
+          expression[i] = expression[i] + expression[i+1]; // then we combine this index with the index in front of it, which must be a number
+          expression.splice(i+1,1); // and then we remove the index in front of the "-"
         }
       }
     }
@@ -193,9 +189,9 @@ function calculateInput(postFixThis) {
   return stack[0]; // Returns the result
 
   function runCalc() {
-    let op = stack.pop();
-    let num2 = parseFloat(stack.pop());
-    let num1 = parseFloat(stack.pop());
+    const op = stack.pop();
+    const num2 = parseFloat(stack.pop());
+    const num1 = parseFloat(stack.pop());
     switch (op) {
       case "^":
         stack.push(num1 ** num2);
