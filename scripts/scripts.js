@@ -2,6 +2,13 @@
 The calculation method first converts the prefix expression into a postfixed expression and then runs a stack-based algorithm to calculate the expression result.
 This is known as a Shunting-Yard algorithm, which typically takes a two pass-through approach, one to convert to postfix and another to run a stack algorithm for calculation. 
 My approach performs both in a single pass-through.
+
+
+let array = [102];
+array = array.toString("").split("");
+array.splice(-1,1);
+console.log(array);
+
 */
 
 const operators = ["+", "-", "x", "/", "^"];
@@ -15,7 +22,7 @@ function handleNumber(num) {
     expression.push(num);
   } else if(!isNaN(expression[lastIndex])) {
     expression[lastIndex] += num.toString();
-  } else { // Change back to || last index is ".", because we won't need the next else if statement once we revert back to every character having it's own index
+  } else { 
     expression.push(num);
   }
   updatePreview();
@@ -96,11 +103,16 @@ function handlePositiveNegative() { // Convert the latest number to negative or 
 }
 
 function clearRecent(clear) {
-  if(clear === 1) {
-    expression.pop();
-  } else {
-    expression = [];
-  }
+  const lastIndex = expression.length-1;
+  if(clear === 1 && expression[lastIndex].length > 1) { // If it's a double digit number, we split the array into multiple indexes so we can remove the last digit only. This creates the backspace functionality.
+    let newNumArray = expression[lastIndex].split(""); // Splits the single index number into multiple indexes.
+    newNumArray.splice(-1,1); // Removes the last index
+    expression[lastIndex] = newNumArray.join(""); // Joins the remaining numbers back into a single index.
+    } else if(clear === 1) {
+      expression.pop();
+    } else {
+      expression = [];
+    }
   updatePreview();
 }
 
@@ -117,7 +129,8 @@ function equalButton() {
   const lastIndex = expression.length - 1;
   let openPara = 0;
   let closePara = 0;
-  for(let i = 0; i < expression.length; i++) {
+  for(let i=0; i < expression.length; i++) {
+    // Count the occurances of ( and ) to make sure the expression is valid.
     if(expression[i] === "(") {
       openPara++;
     } else if(expression[i] === ")") {
@@ -131,6 +144,12 @@ function equalButton() {
     return;
   } else {
     expression = expression.join("").match(pattern); // Converts the expression into the proper format for running the calculation function(s).
+    // Find every number and makes sure it is converted from a string to an integer so we don't have to do so later.
+    for(let i=0; i<expression.length; i++) {
+      if(!isNaN(expression[i])) {
+        expression[i] = parseFloat(expression[i]);
+      }
+    }
     const result = calculateInput(expression);
     const element = document.getElementById("result");
     element.innerHTML = result;
@@ -151,7 +170,7 @@ function calculateInput(postFixThis) {
         }
       }
       opStack.push(value);
-    } else if(!isNaN(parseFloat(value)) || value === "(") { // If the current value is a number or an opening parenthesis, push it to the corresponding opStack/array.
+    } else if(!isNaN(value) || value === "(") { // If the current value is a number or an opening parenthesis, push it to the corresponding opStack/array.
       if(value === "(") {
         opStack.push(value);
       } else {
@@ -182,8 +201,8 @@ function calculateInput(postFixThis) {
 
   function runCalc() {
     const op = stack.pop();
-    const num2 = parseFloat(stack.pop());
-    const num1 = parseFloat(stack.pop());
+    const num2 = stack.pop();
+    const num1 = stack.pop();
     switch (op) {
       case "^":
         stack.push(num1 ** num2);
@@ -201,7 +220,7 @@ function calculateInput(postFixThis) {
         break;
 
       case "+":
-        stack.push(parseFloat(num1) + parseFloat(num2)); // REMEMBER + ON STRINGS WILL CONCAT THEM SO THEY MUST BE CONVERTED
+        stack.push(num1 + num2);
         break;
 
       case "-":
