@@ -12,7 +12,7 @@ console.log(array);
 */
 
 const operators = ["+", "-", "x", "/", "^"];
-const pattern = /(\d+\.\d+|\d+|(?<=\))-|(?<=\D|^)-\d+|\+|\-|x|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
+// const pattern = /(\d+\.\d+|\d+|(?<=\))-|(?<=\D|^)-\d+|\+|\-|x|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
 let expression = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and updating the preview window with innerHTML.
 
 function handleNumber(num) {
@@ -54,7 +54,7 @@ function handleParenthesis() {
 
 function handleOperator(op) {
   const lastIndex = expression.length - 1;
-  if(expression[lastIndex] === "(" || expression[lastIndex] === "." || expression.length === 0) { // Placing an operator after these symbols is incorrect expression format, so we return
+  if(expression[lastIndex] === "(" || expression[lastIndex].toString().indexOf(".") === expression[lastIndex].length-1 || expression.length === 0) { // Placing an operator after these symbols is incorrect expression format, so we return
     return;
   } else if(operators.indexOf(expression[lastIndex]) !== -1) { // If there is already an expression at the end of the expression, we replace it.
     expression.pop();
@@ -71,17 +71,8 @@ function handleDecimal() { // We need to check if it's valid to place another de
   if(isNaN(expression[lastIndex])) {
     return;
   } else {
-    const decimalIndex = expression.lastIndexOf(".");
-    let operatorIndex = 0;
-    operators.forEach(op => {
-      let indexCheck = expression.lastIndexOf(op);
-      console.log(`${op} found at index ${indexCheck}`);
-      if(indexCheck > operatorIndex) {
-        operatorIndex = indexCheck;
-      }
-    })
-    if(operatorIndex > decimalIndex) { // We can only add another decimal if 
-      expression.push(".");
+    if(expression[lastIndex].toString().indexOf(".") === -1) {
+      expression[lastIndex] += ".";
     }
   }
   updatePreview();
@@ -105,9 +96,7 @@ function handlePositiveNegative() { // Convert the latest number to negative or 
 function clearRecent(clear) {
   const lastIndex = expression.length-1;
   if(clear === 1 && expression[lastIndex].length > 1) { // If it's a double digit number, we split the array into multiple indexes so we can remove the last digit only. This creates the backspace functionality.
-    let newNumArray = expression[lastIndex].split(""); // Splits the single index number into multiple indexes.
-    newNumArray.splice(-1,1); // Removes the last index
-    expression[lastIndex] = newNumArray.join(""); // Joins the remaining numbers back into a single index.
+    expression[lastIndex] = expression[lastIndex].slice(0,-1); // Removes the last digit
     } else if(clear === 1) {
       expression.pop();
     } else {
@@ -136,20 +125,17 @@ function equalButton() {
     } else if(expression[i] === ")") {
       closePara++;
     }
+    // Find every number and makes sure it is converted from a string to an integer so we don't have to do so later.
+    if(!isNaN(expression[i])) {
+      expression[i] = parseFloat(expression[i]);
+    }
   }
-  if(expression[lastIndex] === "(" || expression[lastIndex] === "." || operators.indexOf(expression[lastIndex]) !== -1 || openPara > closePara) {
+  if(expression[lastIndex] === "(" || expression[lastIndex].toString().indexOf(".") === expression[lastIndex].length-1  || operators.indexOf(expression[lastIndex]) !== -1 || openPara > closePara) {
     expression.push(" Invalid Expression");
     updatePreview();
     expression.pop();
     return;
   } else {
-    expression = expression.join("").match(pattern); // Converts the expression into the proper format for running the calculation function(s).
-    // Find every number and makes sure it is converted from a string to an integer so we don't have to do so later.
-    for(let i=0; i<expression.length; i++) {
-      if(!isNaN(expression[i])) {
-        expression[i] = parseFloat(expression[i]);
-      }
-    }
     const result = calculateInput(expression);
     const element = document.getElementById("result");
     element.innerHTML = result;
