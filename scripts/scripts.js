@@ -2,17 +2,10 @@
 The calculation method first converts the prefix expression into a postfixed expression and then runs a stack-based algorithm to calculate the expression result.
 This is known as a Shunting-Yard algorithm, which typically takes a two pass-through approach, one to convert to postfix and another to run a stack algorithm for calculation. 
 My approach performs both in a single pass-through.
-
-
-let array = [102];
-array = array.toString("").split("");
-array.splice(-1,1);
-console.log(array);
-
 */
 
 const operators = ["+", "-", "x", "/", "^"];
-// const pattern = /(\d+\.\d+|\d+|(?<=\))-|(?<=\D|^)-\d+|\+|\-|x|\^|\/|\(|\))/g; // The pattern needed to convert the expression into the proper array format before running it through the calculating functions.
+// const pattern = /(\d+\.\d+|\d+|(?<=\))-|(?<=\D|^)-\d+|\+|\-|x|\^|\/|\(|\))/g; 
 let expression = []; // Stores the user's input in an array as inputs are added. Makes it easier to clear by popping the array and updating the preview window with innerHTML.
 
 function handleNumber(num) {
@@ -84,11 +77,7 @@ function handlePositiveNegative() { // Convert the latest number to negative or 
     return;
   } else {
     const num = expression[lastIndex];
-    if(num > 0) {
-      expression[lastIndex] = num * -1;
-    } else if(num < 0) {
-      expression[lastIndex] = num / -1;
-    }
+    expression[lastIndex] = num > 0 ? num * -1 : num / -1;
   }
   updatePreview();
 }
@@ -107,11 +96,7 @@ function clearRecent(clear) {
 
 function updatePreview() {
   const element = document.getElementById("result");
-  if(expression.length === 0) {
-    element.innerHTML = "0";
-  } else {
-    element.innerHTML = expression.join("");
-  }
+  (expression.length === 0) ? element.innerHTML = "0" : element.innerHTML = expression.join("");
 }
 
 function equalButton() {
@@ -143,6 +128,8 @@ function equalButton() {
 }
 
 function calculateInput(postFixThis) {
+  console.log("Working on expression:");
+  console.log(postFixThis);
   let stack = [];
   let opStack = [];
   let postFixexpression = [];
@@ -172,6 +159,8 @@ function calculateInput(postFixThis) {
       opStack.pop(); // Remove ( from the stack
     }
   });
+  console.log("opStack and stack are");
+  console.log(opStack, stack);
   while(opStack.length >= 1 || stack.length === 3) { // Finish popping any leftover operators from the operator opStack to the expression.
     if(operators.includes(stack[stack.length - 1])) {
       runCalc();
@@ -189,10 +178,13 @@ function calculateInput(postFixThis) {
     const op = stack.pop();
     const num2 = stack.pop();
     const num1 = stack.pop();
+    console.log("Running calc on");
+    console.log(num1, op, num2);
     switch (op) {
       case "^":
-        stack.push(num1 ** num2);
+        num1 < 0 ? stack.push(-(num1 ** num2)) : stack.push(num1 ** num2); // -x ** y doesn't work because JavaScript doesn't like a - before exponent, so we're forced to do -(x ** y) for the correct output.
         break;
+        
       case "x":
         stack.push(num1 * num2);
         break;
@@ -213,6 +205,8 @@ function calculateInput(postFixThis) {
         stack.push(num1 - num2);
         break;
     }
+    console.log("stack after calc");
+    console.log(stack);
   }
 
   function opEval(op) {
