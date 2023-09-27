@@ -55,9 +55,17 @@ function handleOperator(op) {
   } else {
     expression.push(op);
   }
+  op === "^" ? handleExponent() : undefined; // If the operator is an exponent, we call the handleExponent function.
   updatePreview();
 }
 
+// This helps correctly compute -x**y vs (-x)**y by flipping -x to positive when presented as (-x), since the calculation always runs either (x**y) or -(x**y).
+function handleExponent() {
+  const index = expression.length - 2; // Sets index to the index rightr before the exponent
+  if(expression[index] === ")" && expression[index-1] < 0) {
+    expression[index-1] /= -1;
+  }
+}
 
 function handleDecimal() { // We need to check if it's valid to place another decimal. We can do this by making sure the most recent decimal came BEFORE the most recent operator or parenthesis.
   const lastIndex = expression.length - 1;
